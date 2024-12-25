@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавить визит</title>
+</head>
+<body>
+    <h1>Добавить визит</h1>
+    <form method="post">
+        {% csrf_token %}
+        
+        <!-- Выбор пациента -->
+        <label for="patient">Пациент:</label>
+        <select id="patient" name="patient" required>
+            <option value="" disabled selected>Выберите пациента</option>
+            {% for patient in patients %}
+            <option value="{{ patient.id }}">{{ patient.first_name }} {{ patient.last_name }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <!-- Выбор нескольких услуг с помощью чекбоксов -->
+        <label>Услуги:</label><br>
+        {% for service in services %}
+        <input type="checkbox" 
+               id="service_{{ service.id }}" 
+               name="services" 
+               value="{{ service.id }}" 
+               data-price="{{ service.price }}" 
+               onchange="updateTotalPrice()">
+        <label for="service_{{ service.id }}">{{ service.name }} ({{ service.price }}₽)</label><br>
+        {% endfor %}
+        <br>
+
+        <!-- Итоговая сумма -->
+        <label>Итоговая сумма:</label>
+        <span id="total_price">0.00</span> ₽<br><br>
+
+        <!-- Кнопки управления -->
+        <button type="submit" class="btn btn-success">Добавить визит</button>
+        <a href="{% url 'admin_dashboard:visit_list' %}" class="btn btn-secondary">Назад</a>
+    </form>
+
+    <script>
+        function updateTotalPrice() {
+            const checkboxes = document.querySelectorAll('input[name="services"]:checked');
+            const totalPrice = Array.from(checkboxes).reduce((sum, checkbox) => {
+                return sum + parseFloat(checkbox.dataset.price || 0);
+            }, 0);
+            document.getElementById('total_price').textContent = totalPrice.toFixed(2);
+        }
+    </script>
+</body>
+</html>

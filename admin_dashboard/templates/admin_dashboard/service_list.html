@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Список услуг</h2>
+<a href="{% url 'admin_dashboard:service_add' %}">Добавить услугу</a>
+{% if page_obj %}
+<table>
+    <thead>
+        <tr>
+            <th>Название услуги</th>
+            <th>Цена</th>
+            <th>Изменить</th>
+            <th>Удалить</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for service in page_obj %}
+        <tr>
+            <td>{{ service.name }}</td>
+            <td>{{ service.price }}</td>
+            <td><a href="{% url 'admin_dashboard:service_edit' service.pk%}">Изменить</a></td>
+            <td><a href="{% url 'admin_dashboard:service_delete' service.pk%}">Удалить</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Нет данных об услугах.</p>
+{% endif %}
+
+<a href="{% url 'show_dashboard' %}">Назад</a>
+
+{% endblock %}

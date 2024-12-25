@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>patient_list</h2>
+<a href="{% url 'admin_dashboard:patient_add' %}">Добавить пациента</a>
+{% if page_obj %}
+<table>
+    <thead>
+        <tr>
+            <th>Имя пациента</th>
+            <th>Фамилия пациента</th>
+            <th>Дата рождения</th>
+            <th>Пол</th>
+            <th>Адрес</th>
+            <th>Телефон</th>
+            <th>Изменить</th>
+            <th>Удалить</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for patient in page_obj %}
+        <tr>
+            <td>{{ patient.first_name }}</td>
+            <td>{{ patient.last_name }}</td>
+            <td>{{ patient.birth_date }}</td>
+            <td>{{ patient.gender }}</td>
+            <td>{{ patient.adress }}</td>
+            <td>{{ patient.telephone }}</td>
+            <td><a href="{% url 'admin_dashboard:patient_edit' patient.pk%}">Изменить</a></td>
+            <td><a href="{% url 'admin_dashboard:patient_delete' patient.pk%}">Удалить</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Нет данных о пациентах.</p>
+{% endif %}
+
+<a href="{% url 'show_dashboard' %}">Назад</a>
+
+{% endblock %}
