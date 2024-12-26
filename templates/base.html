@@ -15,7 +15,7 @@
         <nav>
             <a href="{% url 'admin_dashboard:patient_list' %}">Пациенты</a>
             <a href="{% url 'admin_dashboard:service_list' %}">Услуги</a>
-            <a href="#">Записи</a>
+            <a href="{% url 'admin_dashboard:visit_list' %}">Записи</a>
         </nav>
         {% block content %}
 
