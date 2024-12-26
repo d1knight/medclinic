@@ -22,7 +22,7 @@
             <tbody>
                 {% for visit in page_obj %}
                 <tr>
-                    <td>{{ visit.patient.name }}</td>
+                    <td>{{ visit.patient.first_name }} {{ visit.patient.last_name }}</td>
                     <td>{{ visit.visit_date }}</td>
                     <td>{{ visit.total_price }} Сум</td>
                     <td>
@@ -62,6 +62,7 @@
                 {% endif %}
             </span>
         </div>
+        <a href="{% url 'admin_dashboard:show_dashboard'%}">Назад</a>
     </div>
 </body>
 </html>

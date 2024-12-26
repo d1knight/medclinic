@@ -36,6 +36,7 @@ class Visit(models.Model):
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     paid_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     remaining_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    payment_type = models.JSONField()
 
     # Добавляем поле payment_status
     PAYMENT_STATUS_CHOICES = [

@@ -1,44 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Оплата визита</title>
 </head>
+
 <body>
     <div class="container">
         <h1>Оплата визита</h1>
 
         <h3>Итоговая сумма визита: <span id="totalPrice">{{ visit.total_price }}</span> </h3>
-        <h3>Оставшаяся сумма для оплаты: <span id="remainingAmount">{{ visit.remaining_amount }}</span> Сум</h3>
+        <h3>Оставшаяся сумма для оплаты: <span id="remainingAmount">{{ visit.remaining_amount }}</span> </h3>
 
         {% if visit.payment_status == 'paid' %}
-            <h3>Визит полностью оплачен!</h3>
-            <button onclick="alert('Визит уже оплачен.');" disabled>Оплатить</button>
-            <a href="{% url 'admin_dashboard:visit_payments_history' visit.id %}">Перейти к истории платежей</a>
+        <h3>Визит полностью оплачен!</h3>
+        <button onclick="alert('Визит уже оплачен.');" disabled>Оплатить</button>
+        <a href="{% url 'admin_dashboard:visit_payments_history' visit.id %}">Перейти к истории платежей</a>
         {% else %}
-            <form id="paymentForm" method="post" action="{% url 'admin_dashboard:visit_payment' visit.id %}">
-                {% csrf_token %}
-                
-                <h3>Выберите способ оплаты:</h3>
-                <div>
-                    <label>
-                        <input type="radio" name="payment_method" value="cash" required> Наличные
-                    </label>
-                </div>
-                <div>
-                    <label>
-                        <input type="radio" name="payment_method" value="card" required> Пластик
-                    </label>
-                </div>
+        <form id="paymentForm" method="post" action="{% url 'admin_dashboard:visit_payment' visit.id %}">
+            {% csrf_token %}
 
-                <div>
-                    <label for="paid_amount">Введите сумму:</label>
-                    <input type="number" id="paid_amount" name="paid_amount" step="0.01" required>
-                </div>
+            <h3>Выберите способ оплаты:</h3>
+            <div>
+                <label>
+                    <input type="radio" name="payment_method" value="cash" required> Наличные
+                </label>
+            </div>
+            <div>
+                <label>
+                    <input type="radio" name="payment_method" value="card" required> Пластик
+                </label>
+            </div>
 
-                <button type="submit" class="btn btn-success">Подтвердить оплату</button>
-            </form>
+            <div>
+                <label for="paid_amount">Введите сумму:</label>
+                <input type="number" id="paid_amount" name="paid_amount" step="0.01" required>
+            </div>
+
+            <button type="submit" class="btn btn-success">Подтвердить оплату</button>
+        </form>
+
         {% endif %}
 
         <div id="paymentsHistory">
@@ -47,10 +50,11 @@
                 <!-- Здесь будут отображаться все введенные суммы -->
             </ul>
         </div>
-
+        <a href="{% url 'admin_dashboard:visit_list' %}">Назад</a>
         <script>
-            let totalPrice = {{ visit.total_price|floatformat:2 }};
-            let remainingAmount = {{ visit.remaining_amount|floatformat:2 }};
+                let totalPrice = "{{ visit.total_price|default:0|floatformat:2 }}";
+                let remainingAmount = "{{ visit.remaining_amount|default:0|floatformat:2 }}";
+
             let payments = [];  // Массив для хранения введенных сумм
 
             const paymentForm = document.getElementById('paymentForm');
@@ -65,7 +69,7 @@
 
                 // Если оставшаяся сумма 0, блокируем форму оплаты и показываем, что визит оплачен
                 if (remainingAmount <= 0) {
-                    setTimeout(function() {
+                    setTimeout(function () {
                         addPaymentToHistory(remainingAmount);
                         alert('Оплата полностью завершена!');
                         window.location.href = "{% url 'admin_dashboard:visit_list' %}";  // Перенаправление на список визитов
@@ -78,14 +82,28 @@
                 event.preventDefault();
 
                 const paidAmount = parseFloat(paidAmountInput.value);
-
+                
                 // Если сумма меньше оставшейся, добавляем в историю платежей и обновляем оставшуюся сумму
                 if (paidAmount <= remainingAmount) {
                     payments.push(paidAmount);
                     updateRemainingAmount();
                     addPaymentToHistory(paidAmount);
 
+                    console.log(paidAmount, remainingAmount);
+
                     paidAmountInput.value = '';  // Очищаем поле для ввода суммы
+
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', 'http://127.0.0.1:8000/admin_dashboard/visits/' + "{{ visit.id }}" + '/payment/', true); 
+                    // xhr.onreadystatechange = function () {
+                        
+                            // var response = JSON.parse(xhr.responseText); 
+                            var data = 'payment_method=' + encodeURIComponent('karta') + '&paid_amount=' + encodeURIComponent(paidAmount);
+                            //document.getElementById('result').innerHTML = '<h3>' + response.title + '</h3><p>' + response.body + '</p>';
+                        
+                    // };
+                    xhr.send(data);
+
                 } else {
                     alert('Сумма превышает оставшуюся сумму для оплаты.');
                 }
@@ -103,4 +121,5 @@
         </script>
     </div>
 </body>
+
 </html>

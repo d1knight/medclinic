@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import Patient, Service, Visit
 from django.core.paginator import Paginator
 from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
 
 
 def show_dashboard(request):
@@ -91,7 +92,7 @@ def visit_print(request, visit_id):
     response.write(html.encode('utf-8'))  # PDF-генерация будет добавлена позже
     return response
 
-
+@csrf_exempt
 def visit_payment(request, visit_id):
     visit = Visit.objects.get(id=visit_id)
 
@@ -103,7 +104,7 @@ def visit_payment(request, visit_id):
         payment_method = request.POST.get('payment_method')
         paid_amount = float(request.POST.get('paid_amount', 0))
 
-        # Добавляем оплаченную сумму к общей
+        # Добавляем оплаченную сумму к общей    
         visit.paid_amount += paid_amount
         visit.remaining_amount = visit.total_price - visit.paid_amount
 
@@ -114,7 +115,7 @@ def visit_payment(request, visit_id):
         # Сохраняем изменения
         visit.save()
 
-        return redirect('admin_dashboard:visit_list')  # Перенаправляем на список визитов
+        # return redirect('admin_dashboard:visit_list')  # Перенаправляем на список визитов
 
     return render(request, 'admin_dashboard/visit_payment.html', {'visit': visit})
 
