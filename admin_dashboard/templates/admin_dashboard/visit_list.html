@@ -29,6 +29,10 @@
                 {% for visit in page_obj %}
                 <tr>
                     <td>{{ visit.patient.first_name }} {{ visit.patient.last_name }}</td>
+<<<<<<< HEAD
+=======
+                    <td>{{ visit.visit_date }}</td>
+>>>>>>> c57154d27fe01d8dac89a2b16848664be7283ab9
                     <td>{{ visit.total_price }} Сум</td>
                     <td>{{ visit.paid_amount }} Сум</td>
                     <td>
@@ -49,6 +53,27 @@
                 {% endfor %}
             </tbody>
         </table>
+<<<<<<< HEAD
+=======
+
+        <!-- Пагинация -->
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1&q={{ search_query }}&sort={{ sort_by }}">First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}&sort={{ sort_by }}">Previous</a>
+                {% endif %}
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}&q={{ search_query }}&sort={{ sort_by }}">Next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}&q={{ search_query }}&sort={{ sort_by }}">Last</a>
+                {% endif %}
+            </span>
+        </div>
+        <a href="{% url 'admin_dashboard:show_dashboard'%}">Назад</a>
+>>>>>>> c57154d27fe01d8dac89a2b16848664be7283ab9
     </div>
     <!-- Пагинация -->
     <nav aria-label="Пагинация">
