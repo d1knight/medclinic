@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>История визитов: {{ patient.first_name }} {{ patient.last_name }}</h2>
+    <a href="{% url 'admin_dashboard:patient_list' %}" class="btn btn-secondary mb-3">Назад к списку пациентов</a>
+
+    {% if visits %}
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Дата визита</th>
+                <th>Причина</th>
+                <th>Услуги</th>
+                <th>Общая цена</th>
+                <th>Оплаченная сумма</th>
+                <th>Статус оплаты</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for visit in visits %}
+            <tr>
+                <td>{{ visit.visit_date }}</td>
+                <td>{{ visit.reason }}</td>
+                <td>
+                    {% for service in visit.services.all %}
+                        {{ service.name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </td>
+                <td>{{ visit.total_price }}</td>
+                <td>{{ visit.paid_amount }}</td>
+                <td>{{ visit.get_payment_status_display }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="alert alert-info">История визитов отсутствует.</p>
+    {% endif %}
+</div>
+{% endblock %}

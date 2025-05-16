@@ -1,20 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Список визитов</title>
-</head>
-<body>
-    <div class="container">
-        <h1>Список визитов</h1>
+{% extends 'base.html' %}
 
-        <table>
-            <thead>
+{% block content %}
+<div class="container mt-4">
+    <!-- Вывод сообщений -->
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    
+    <h2 class="mb-4">Список визитов</h2>
+    <a href="{% url 'admin_dashboard:visit_add' %}" class="btn btn-primary mb-3">Добавить визит</a>
+    {% if page_obj %}
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead class="thead-dark">
                 <tr>
                     <th>Пациент</th>
-                    <th>Дата визита</th>
                     <th>Итоговая сумма</th>
+                    <th>Оплачено</th>
                     <th>Статус оплаты</th>
                     <th>Действия</th>
                 </tr>
@@ -22,46 +28,83 @@
             <tbody>
                 {% for visit in page_obj %}
                 <tr>
-                    <td>{{ visit.patient.name }}</td>
-                    <td>{{ visit.visit_date }}</td>
+                    <td>{{ visit.patient.first_name }} {{ visit.patient.last_name }}</td>
                     <td>{{ visit.total_price }} Сум</td>
+                    <td>{{ visit.paid_amount }} Сум</td>
                     <td>
                         {% if visit.payment_status == 'paid' %}
-                            <span style="color: green;">Оплачен</span>
+                        <span class="badge bg-success">Оплачен</span>
+                        {% elif visit.payment_status == 'partially_paid' %}
+                        <span class="badge bg-warning text-dark">Частично оплачен</span>
                         {% else %}
-                            <span style="color: red;">Не оплачен</span>
+                        <span class="badge bg-danger">Не оплачен</span>
                         {% endif %}
                     </td>
                     <td>
-                        {% if visit.payment_status == 'paid' %}
-                            <button onclick="alert('Визит уже оплачен!');" disabled>Оплатить</button>
-                        {% else %}
-                            <a href="{% url 'admin_dashboard:visit_payment' visit.id %}">
-                                <button>Оплатить</button>
-                            </a>
-                        {% endif %}
+                        <a href="{% url 'admin_dashboard:visit_payment' visit.id %}" class="btn btn-sm btn-info mb-1">Оплатить</a>
+                        <a href="{% url 'admin_dashboard:visit_print' visit.id %}" class="btn btn-sm btn-secondary" target="_blank">Печать</a>
+
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-
-        <!-- Пагинация -->
-        <div class="pagination">
-            <span class="step-links">
-                {% if page_obj.has_previous %}
-                    <a href="?page=1&q={{ search_query }}&sort={{ sort_by }}">First</a>
-                    <a href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}&sort={{ sort_by }}">Previous</a>
-                {% endif %}
-                <span class="current">
-                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-                </span>
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}&q={{ search_query }}&sort={{ sort_by }}">Next</a>
-                    <a href="?page={{ page_obj.paginator.num_pages }}&q={{ search_query }}&sort={{ sort_by }}">Last</a>
-                {% endif %}
-            </span>
-        </div>
     </div>
-</body>
-</html>
+    <!-- Пагинация -->
+    <nav aria-label="Пагинация">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Предыдущая">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">&laquo;</span>
+            </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+            </li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Следующая">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">&raquo;</span>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% else %}
+    <p class="alert alert-info">Нет данных о визитах.</p>
+    {% endif %}
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                alert.classList.add('fade');
+                setTimeout(() => alert.remove(), 500); // Удаляем элемент после анимации
+            }, 5000); // 5 секунд
+        });
+    });
+</script>
+{% endblock %}

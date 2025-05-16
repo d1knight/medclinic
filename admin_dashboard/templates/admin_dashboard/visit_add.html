@@ -1,54 +1,135 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Добавить визит</title>
-</head>
-<body>
-    <h1>Добавить визит</h1>
-    <form method="post">
-        {% csrf_token %}
-        
-        <!-- Выбор пациента -->
-        <label for="patient">Пациент:</label>
-        <select id="patient" name="patient" required>
-            <option value="" disabled selected>Выберите пациента</option>
-            {% for patient in patients %}
-            <option value="{{ patient.id }}">{{ patient.first_name }} {{ patient.last_name }}</option>
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Добавить визит</h2>
+<form method="post">
+    {% csrf_token %}
+    
+    <!-- Поле для поиска пациента -->
+    <label for="patient_search">Пациент:</label>
+    <input type="text" id="patient_search" placeholder="Введите имя или фамилию" class="form-control" oninput="filterPatients()" required>
+    <input type="hidden" id="patient" name="patient" required>
+    <div id="patient_list" class="list-group mt-2"></div>
+    <br>
+
+    <!-- Поле для ввода причины болезни -->
+    <label for="reason">Причина болезни:</label>
+    <textarea id="reason" name="reason" class="form-control" rows="4" required></textarea>
+    <br>
+
+    <!-- Выбор услуг -->
+    <label>Услуги:</label><br>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th scope="col">Название услуги</th>
+                <th scope="col">Цена за единицу</th>
+                <th scope="col">Количество</th>
+                <th scope="col">Сумма</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for service in services %}
+            <tr>
+                <td>
+                    <input type="checkbox" id="service_{{ service.id }}" name="services" value="{{ service.id }}" onchange="toggleService('{{ service.id }}')">
+                    <label for="service_{{ service.id }}">{{ service.name }}</label>
+                </td>
+                <td>{{ service.price }} Сум</td>
+                <td>
+                    <input type="number" id="quantity_{{ service.id }}" name="quantity_{{ service.id }}" value="1" min="1" class="form-control quantity-input" data-service-id="{{ service.id }}" data-price="{{ service.price }}" onchange="updateTotalPrice()" disabled>
+                </td>
+                <td>
+                    <span id="subtotal_{{ service.id }}">0.00</span> Сум
+                </td>
+            </tr>
             {% endfor %}
-        </select><br><br>
+        </tbody>
+    </table>
+    <br>
 
-        <!-- Выбор нескольких услуг с помощью чекбоксов -->
-        <label>Услуги:</label><br>
-        {% for service in services %}
-        <input type="checkbox" 
-               id="service_{{ service.id }}" 
-               name="services" 
-               value="{{ service.id }}" 
-               data-price="{{ service.price }}" 
-               onchange="updateTotalPrice()">
-        <label for="service_{{ service.id }}">{{ service.name }} ({{ service.price }}₽)</label><br>
+    <!-- Итоговая сумма -->
+    <label>Итоговая сумма:</label>
+    <span id="total_price">0.00</span> Сум<br><br>
+
+    <button type="submit" class="btn btn-success">Добавить визит</button>
+    <a href="{% url 'admin_dashboard:visit_list' %}" class="btn btn-secondary">Назад</a>
+</form>
+
+<script>
+    // Список пациентов, переданных с сервера
+    const patients = [
+        {% for patient in patients %}
+        { id: "{{ patient.id }}", name: "{{ patient.first_name }} {{ patient.last_name }}" },
         {% endfor %}
-        <br>
+    ];
 
-        <!-- Итоговая сумма -->
-        <label>Итоговая сумма:</label>
-        <span id="total_price">0.00</span> ₽<br><br>
+    // Функция фильтрации пациентов
+    function filterPatients() {
+        const input = document.getElementById('patient_search').value.toLowerCase();
+        const list = document.getElementById('patient_list');
+        list.innerHTML = ''; // Очистить предыдущие результаты
 
-        <!-- Кнопки управления -->
-        <button type="submit" class="btn btn-success">Добавить визит</button>
-        <a href="{% url 'admin_dashboard:visit_list' %}" class="btn btn-secondary">Назад</a>
-    </form>
+        const filteredPatients = patients.filter(patient => 
+            patient.name.toLowerCase().includes(input)
+        );
 
-    <script>
-        function updateTotalPrice() {
-            const checkboxes = document.querySelectorAll('input[name="services"]:checked');
-            const totalPrice = Array.from(checkboxes).reduce((sum, checkbox) => {
-                return sum + parseFloat(checkbox.dataset.price || 0);
-            }, 0);
-            document.getElementById('total_price').textContent = totalPrice.toFixed(2);
+        filteredPatients.forEach(patient => {
+            const item = document.createElement('a');
+            item.classList.add('list-group-item', 'list-group-item-action');
+            item.textContent = patient.name;
+            item.onclick = () => selectPatient(patient.id, patient.name);
+            list.appendChild(item);
+        });
+
+        if (filteredPatients.length === 0 && input) {
+            const noMatch = document.createElement('div');
+            noMatch.classList.add('list-group-item', 'text-muted');
+            noMatch.textContent = 'Пациент не найден';
+            list.appendChild(noMatch);
         }
-    </script>
-</body>
-</html>
+    }
+
+    function selectPatient(id, name) {
+        document.getElementById('patient_search').value = name;
+        document.getElementById('patient').value = id;
+        document.getElementById('patient_list').innerHTML = '';
+    }
+
+    // Функция обновления итоговой суммы
+    function updateTotalPrice() {
+        const checkboxes = document.querySelectorAll('input[name="services"]:checked');
+        let totalPrice = 0;
+
+        checkboxes.forEach(checkbox => {
+            const serviceId = checkbox.value;
+            const quantityInput = document.getElementById(`quantity_${serviceId}`);
+            const quantity = parseInt(quantityInput.value) || 1;
+            const price = parseFloat(quantityInput.dataset.price);
+
+            const subtotal = quantity * price;
+            document.getElementById(`subtotal_${serviceId}`).textContent = subtotal.toFixed(2);
+
+            totalPrice += subtotal;
+        });
+
+        document.getElementById('total_price').textContent = totalPrice.toFixed(2);
+    }
+
+    // Включение/выключение поля количества
+    function toggleService(serviceId) {
+        const checkbox = document.getElementById(`service_${serviceId}`);
+        const quantityInput = document.getElementById(`quantity_${serviceId}`);
+
+        if (checkbox.checked) {
+            quantityInput.disabled = false;
+            updateTotalPrice();
+        } else {
+            quantityInput.disabled = true;
+            quantityInput.value = 1;
+            document.getElementById(`subtotal_${serviceId}`).textContent = '0.00';
+            updateTotalPrice();
+        }
+    }
+</script>
+{% endblock %}

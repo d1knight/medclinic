@@ -1,17 +1,15 @@
 {% extends 'base.html' %}
 
 {% block content %}
-
-
-  <h1>Удалить пациента</h1>
-<p>Вы уверены, что хотите удалить пациента "{{ patient.first_name }}"?</p>
-<form method="post">
-  {% csrf_token %}
-  <button class="btn btn-danger" type="submit">Удалить</button>  <a class="btn btn-primary" href="{% url 'admin_dashboard:patient_list' %}">Назад</a>
-</form>
-
-
-
-
-{% endblock%}
-
+<div class="container mt-4 text-center">
+    <h2 class="mb-4">Удалить пациента</h2>
+    <p class="alert alert-warning">
+        Вы уверены, что хотите удалить пациента <strong>"{{ patient.first_name }} {{ patient.last_name }}"</strong>?
+    </p>
+    <form method="post">
+        {% csrf_token %}
+        <button class="btn btn-danger btn-lg" type="submit">Удалить</button>
+        <a class="btn btn-secondary btn-lg" href="{% url 'admin_dashboard:patient_list' %}">Отмена</a>
+    </form>
+</div>
+{% endblock %}

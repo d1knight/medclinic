@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,21 +27,30 @@
 </head>
 <body>
     <h1>Детали визита</h1>
-    <p>Пациент: {{ visit.patient.first_name }} {{ visit.patient.last_name }}</p>
-    <p>Дата визита: {{ visit.id }}</p>
+    <p><strong>Пациент:</strong> {{ visit.patient.first_name }} {{ visit.patient.last_name }}</p>
+    <p><strong>Статус оплаты:</strong> 
+        {% if visit.payment_status == 'paid' %}
+            Оплачен
+        {% elif visit.payment_status == 'partially_paid' %}
+            Частично оплачен
+        {% else %}
+            Не оплачен
+        {% endif %}
+    </p>
+    <p><strong>Итоговая сумма:</strong> {{ visit.total_price }} ₽</p>
 
     <table>
         <thead>
             <tr>
                 <th>Услуга</th>
-                <th>Цена (₽)</th>
+                <th>Цена Сум</th>
             </tr>
         </thead>
         <tbody>
             {% for service in visit.services.all %}
             <tr>
                 <td>{{ service.name }}</td>
-                <td>{{ service.price }}</td>
+                <td>{{ service.price }} ₽</td>
             </tr>
             {% endfor %}
         </tbody>

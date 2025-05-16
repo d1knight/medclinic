@@ -1,34 +1,55 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Список услуг</h2>
+    <a href="{% url 'admin_dashboard:service_add' %}" class="btn btn-primary mb-3">Добавить услугу</a>
+    {% if page_obj %}
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Название</th>
+                    <th>Цена</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for service in page_obj %}
+                <tr>
+                    <td>{{ service.name }}</td>
+                    <td>{{ service.price|floatformat:2 }}</td>
+                    <td>
+                        <a href="{% url 'admin_dashboard:service_edit' service.id %}" class="btn btn-sm btn-warning">Редактировать</a>
+                        <a href="{% url 'admin_dashboard:service_delete' service.id %}" class="btn btn-sm btn-danger">Удалить</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-<h2>Список услуг</h2>
-<a href="{% url 'admin_dashboard:service_add' %}">Добавить услугу</a>
-{% if page_obj %}
-<table>
-    <thead>
-        <tr>
-            <th>Название услуги</th>
-            <th>Цена</th>
-            <th>Изменить</th>
-            <th>Удалить</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for service in page_obj %}
-        <tr>
-            <td>{{ service.name }}</td>
-            <td>{{ service.price }}</td>
-            <td><a href="{% url 'admin_dashboard:service_edit' service.pk%}">Изменить</a></td>
-            <td><a href="{% url 'admin_dashboard:service_delete' service.pk%}">Удалить</a></td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p>Нет данных об услугах.</p>
-{% endif %}
+    <!-- Пагинация -->
+    <div class="pagination">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; Первая</a>
+                <a href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
+            {% endif %}
 
-<a href="{% url 'show_dashboard' %}">Назад</a>
+            <span class="current">
+                Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}.
+            </span>
 
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">Следующая</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">Последняя &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+
+    {% else %}
+    <p class="alert alert-info">Нет данных об услугах.</p>
+    {% endif %}
+</div>
 {% endblock %}

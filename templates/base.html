@@ -5,24 +5,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    <header>
-<h1>Main</h1>
-<h2>Secondary</h2>
+<body class="d-flex flex-column min-vh-100">
+
+    <header class="bg-primary text-white py-3">
+        <div class="container">
+            <h1 class="display-4">Admin Dashboard</h1>
+            <h2 class="lead">Управляйте клиникой легко</h2>
+        </div>
     </header>
-    <div class="container">
-        <nav>
-            <a href="{% url 'admin_dashboard:patient_list' %}">Пациенты</a>
-            <a href="{% url 'admin_dashboard:service_list' %}">Услуги</a>
-            <a href="{% url 'admin_dashboard:visit_list' %}">Записи</a>
+
+    <div class="container flex-grow-1 mt-4">
+        <nav class="nav nav-pills mb-4">
+            <a class="nav-link" href="{% url 'admin_dashboard:patient_list' %}">Пациенты</a>
+            <a class="nav-link" href="{% url 'admin_dashboard:service_list' %}">Услуги</a>
+            <a class="nav-link" href="{% url 'admin_dashboard:visit_list' %}">Записи</a>
         </nav>
+
         {% block content %}
-
-
+        <div class="content">
+            <!-- Ваш контент здесь -->
+        </div>
         {% endblock %}
+
+        {% if messages %}
+        <div class="messages mt-4">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
 
+    <footer class="bg-dark text-white text-center py-3 mt-auto">
+        <p>© 2025 МедКлиника. Все права защищены.</p>
+    </footer>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
